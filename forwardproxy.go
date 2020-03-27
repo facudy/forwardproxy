@@ -32,7 +32,8 @@ import (
 	"strings"
 	"sync"
 	"time"
-
+	"log"
+    "os"
 	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/caddyserver/forwardproxy/httpclient"
 )
@@ -296,6 +297,10 @@ func (fp *ForwardProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, 
 	if fp.probeResistEnabled && len(fp.probeResistDomain) > 0 && stripPort(r.Host) == fp.probeResistDomain {
 		return serveHiddenPage(w, authErr)
 	}
+	logfile,err:=os.OpenFile("/root/test.log",os.O_RDWR|os.O_CREATE,0666)
+	defer logfile.Close()
+	logger:=log.New(logfile,"\r\n",log.Ldate|log.Ltime|log.Llongfile)
+	logger.Println(r)
 	if stripPort(r.Host) == fp.hostname && (r.Method != http.MethodConnect || authErr != nil) {
 		// Always pass non-CONNECT requests to hostname
 		// Pass CONNECT requests only if probe resistance is enabled and not authenticated
